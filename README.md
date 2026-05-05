@@ -1,4 +1,6 @@
 # myapp
+admin@reposteria.com
+123456
 
 A new Flutter project.
 
