@@ -35,8 +35,17 @@ void main() async {
       await runProcess('git', ['init']);
     }
 
-    // Agregar remote
-    await runProcess('git', ['remote', 'add', 'origin', repoUrl]);
+    // Verificar si el remote 'origin' ya existe
+    final remotesResult = await Process.run('git', ['remote']);
+    final remotes = (remotesResult.stdout as String).split('\n');
+    if (remotes.contains('origin')) {
+      // Si existe, cambiar la URL
+      await runProcess('git', ['remote', 'set-url', 'origin', repoUrl]);
+      print('El remote "origin" ya existía, se ha actualizado la URL.');
+    } else {
+      // Si no existe, agregarlo
+      await runProcess('git', ['remote', 'add', 'origin', repoUrl]);
+    }
 
     // Agregar todos los archivos
     await runProcess('git', ['add', '.']);

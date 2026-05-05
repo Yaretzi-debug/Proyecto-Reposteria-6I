@@ -5,10 +5,12 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.0.0
+
 dependencies:
   flutter:
     sdk: flutter
-  # Hemos dejado solo una versión de cada una y corregido la sangría
+    
+  # Librerías de Firebase y diseño
   firebase_core: ^2.15.0
   cloud_firestore: ^4.8.0
   firebase_auth: ^4.7.0
@@ -18,5 +20,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-lutter:
-  uses-material-design: true 
+
+flutter:
+  # Esta línea es la que permite que se vean los iconos (como el pastelito)
+  uses-material-design: true
