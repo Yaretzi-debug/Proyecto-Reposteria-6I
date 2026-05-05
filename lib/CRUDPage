@@ -1,0 +1,90 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class CRUDPage extends StatelessWidget {
+  final CollectionReference _postres = FirebaseFirestore.instance.collection('postres');
+  final TextEditingController nombreController = TextEditingController();
+  final TextEditingController precioController = TextEditingController();
+
+  // Función para Crear o Actualizar
+  Future<void> _createOrUpdate([DocumentSnapshot? documentSnapshot]) async {
+    String action = 'create';
+    if (documentSnapshot != null) {
+      action = 'update';
+      nombreController.text = documentSnapshot['nombre'];
+      precioController.text = documentSnapshot['precio'].toString();
+    }
+
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              TextField(controller: nombreController, decoration: InputDecoration(labelText: 'Nombre del Postre')),
+              TextField(controller: precioController, decoration: InputDecoration(labelText: 'Precio'), keyboardType: TextInputType.number),
+              ElevatedButton(
+                child: Text(action == 'create' ? 'Agregar' : 'Actualizar'),
+                onPressed: () async {
+                  if (action == 'create') {
+                    await _postres.add({"nombre": nombreController.text, "precio": double.parse(precioController.text)});
+                  } else {
+                    await _postres.doc(documentSnapshot!.id).update({"nombre": nombreController.text, "precio": double.parse(precioController.text)});
+                  }
+                  nombreController.clear();
+                  precioController.clear();
+                  Navigator.of(ctx).pop();
+                },
+              )
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Inventario de Postres")),
+      body: StreamBuilder(
+        stream: _postres.snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+          if (streamSnapshot.hasData) {
+            return ListView.builder(
+              itemCount: streamSnapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
+                return Card(
+                  color: Colors.pink[50],
+                  margin: EdgeInsets.all(10),
+                  child: ListTile(
+                    title: Text(documentSnapshot['nombre'], style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text("\$${documentSnapshot['precio']}"),
+                    trailing: SizedBox(
+                      width: 100,
+                      child: Row(
+                        children: [
+                          IconButton(icon: Icon(Icons.edit, color: Colors.blue), onPressed: () => _createOrUpdate(documentSnapshot)),
+                          IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => _postres.doc(documentSnapshot.id).delete()),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.pink,
+        onPressed: () => _createOrUpdate(),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
