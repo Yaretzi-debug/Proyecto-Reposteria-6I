@@ -56,8 +56,9 @@ void main() async {
     // Renombrar la rama a la seleccionada
     await runProcess('git', ['branch', '-M', branchName]);
 
-    // Enviar a GitHub
-    await runProcess('git', ['push', '-u', 'origin', branchName]);
+    // Enviar a GitHub forzando el push para sobreescribir el historial remoto inicial
+    print('Forzando el push para sobreescribir el historial remoto inicial...');
+    await runProcess('git', ['push', '-u', '--force', 'origin', branchName]);
 
     print('\n¡Repositorio enviado a GitHub exitosamente!');
   } catch (e) {
